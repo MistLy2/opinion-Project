@@ -8,7 +8,8 @@
     <artifactId>cloud-demo</artifactId>
     <version>1.0</version>
     <modules>
-
+        <module>user-service</module>
+        <module>good-service</module>
     </modules>
 
     <packaging>pom</packaging>
