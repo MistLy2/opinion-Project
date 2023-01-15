@@ -10,6 +10,9 @@
     <modules>
         <module>user-service</module>
         <module>good-service</module>
+        <module>person-service</module>
+        <module>opinion-service</module>
+        <module>comment-service</module>
     </modules>
 
     <packaging>pom</packaging>

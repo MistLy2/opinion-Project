@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/comment-service/comment-service.iml" filepath="$PROJECT_DIR$/comment-service/comment-service.iml" />
+      <module fileurl="file://$PROJECT_DIR$/opinion-service/opinion-service.iml" filepath="$PROJECT_DIR$/opinion-service/opinion-service.iml" />
+      <module fileurl="file://$PROJECT_DIR$/person-service/person-service.iml" filepath="$PROJECT_DIR$/person-service/person-service.iml" />
+    </modules>
+  </component>
+</project>
