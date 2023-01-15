@@ -1,0 +1,48 @@
+server:
+  port: 8081
+#  用postman接口测试时，这里的端口要默认是80，否则会无法连接
+
+spring:
+  application:
+    name: person-service
+  datasource:
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      url: jdbc:mysql://localhost:3306/db_person?serverTimezone=Asia/Shanghai&useUnicode=true&
+        characterEncoding=utf-8&useSSL=false
+      username: root
+      password:
+  redis:
+    host: localhost
+    port: 6379
+    #password: 123456  如果有密码就需要
+    database: 0
+    jedis:
+      pool:
+        max-active: 8
+        max-idle: 4
+        min-idle: 0
+        max-wait: 1ms #连接池最大阻塞等待时间
+  cache:
+    redis:
+      time-to-live: 1800000 #设置缓存数据的缓存时间
+
+  view:
+    prefix: /
+    suffix: .html
+#  mvc:
+#    view:
+#      prefix: /
+#      suffix: .html
+##      视图解析器配置
+
+
+
+mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+    map-underscore-to-camel-case: true
+  global-config:
+    db-config:
+      id-type: ASSIGN_ID
+#      这里要注意一定要设置id为自增，系统默认为雪花算法形成的无规则id
+# 进行一个mp日志的打印,设置为标准输出流打印,开启日志后就能看到mp执行过程和sql执行过程
