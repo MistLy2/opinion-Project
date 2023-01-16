@@ -10,7 +10,6 @@
         <module name="opinion-service" />
         <module name="good-service" />
         <module name="comment-service" />
-        <module name="user-service" />
         <module name="person-service" />
       </profile>
     </annotationProcessing>

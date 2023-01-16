@@ -3,6 +3,9 @@ server:
 #  用postman接口测试时，这里的端口要默认是80，否则会无法连接
 
 spring:
+  cloud:
+    nacos:
+      server-addr: localhost:8848
   application:
     name: user-service
   datasource:
