@@ -6,7 +6,10 @@ import com.example.entity.User;
 import com.example.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
@@ -16,6 +19,7 @@ import java.util.Map;
 @Slf4j
 @RequestMapping("/user")
 @RestController
+@Configuration
 public class UserController {
 
     @Autowired
@@ -79,4 +83,11 @@ public class UserController {
 
         return R.success("注册成功，请返回登录");
     }
+
+    //kafka消费者测试
+    @KafkaListener(topics = "first")
+    public void consume(String msg){
+        System.out.println(msg);
+    }
+
 }

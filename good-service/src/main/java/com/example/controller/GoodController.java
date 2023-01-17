@@ -6,13 +6,12 @@ import com.example.entity.Good;
 import com.example.service.GoodService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.cache.CacheProperties;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
-
 import java.util.List;
 
 @Slf4j
@@ -26,6 +25,9 @@ public class GoodController {
     @Autowired
     private GoodService goodService;
 
+    @Autowired
+    private KafkaTemplate<String,String> kafkaTemplate;
+
     private RestTemplate restTemplate;
 
     //pc端的展示和兑换功能，管理端的添加和删除功能
@@ -36,6 +38,7 @@ public class GoodController {
         //利用动态key 设置redis缓存
         //这里注意如果数据发生修改，则需要删除redis中的缓存，从数据库中获取
         String key = "goods";
+        kafkaTemplate.send("first","hello");
         LambdaQueryWrapper<Good> wrapper = new LambdaQueryWrapper<>();
         wrapper.orderByAsc(Good::getScoreNumber);
 

@@ -12,6 +12,7 @@
         <module name="comment-service" />
         <module name="user-service" />
         <module name="person-service" />
+        <module name="kafka" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
@@ -26,6 +27,7 @@
       <module name="good-service" options="-parameters" />
       <module name="good-service (2)" options="-parameters" />
       <module name="good-service (3)" options="-parameters" />
+      <module name="kafka" options="-parameters" />
       <module name="opinion-service" options="-parameters" />
       <module name="person-service" options="-parameters" />
       <module name="user-service" options="-parameters" />

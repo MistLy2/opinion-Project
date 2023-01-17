@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>cn.itcast.demo</groupId>
-    <artifactId>cloud-demo</artifactId>
+    <artifactId>opinion-project</artifactId>
     <version>1.0</version>
     <modules>
         <module>user-service</module>
@@ -13,6 +13,7 @@
         <module>person-service</module>
         <module>opinion-service</module>
         <module>comment-service</module>
+        <module>kafka</module>
     </modules>
 
     <packaging>pom</packaging>
@@ -63,12 +64,20 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+<!--            //kafka-->
+
         </dependencies>
     </dependencyManagement>
     <dependencies>
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-stream-kafka</artifactId>
+            <version>4.0.0</version>
+            <scope>compile</scope>
         </dependency>
     </dependencies>
 </project>
