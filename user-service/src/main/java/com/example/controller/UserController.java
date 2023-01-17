@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
 
 import javax.servlet.http.HttpSession;
 import java.util.Map;
@@ -22,6 +23,9 @@ public class UserController {
 
     @Autowired
     private RedisTemplate redisTemplate;
+
+    //@Autowired
+    private RestTemplate restTemplate;
 
     @PostMapping("/login")
     public R<User> login(HttpSession session, @RequestBody Map map){
