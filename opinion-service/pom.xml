@@ -19,6 +19,10 @@
     </properties>
 
     <dependencies>
+    <!--jwt token验证-->
+
+
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-redis</artifactId>
