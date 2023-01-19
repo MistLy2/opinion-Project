@@ -48,7 +48,7 @@ public class UserController {
 
         System.out.println(map);
         //Object attribute = session.getAttribute(phone);
-        //这个phone就从redis中进行获取了
+        //这个account就从redis中进行获取了
         User attribute = (User)redisTemplate.opsForValue().get(account);
 
         if(attribute!=null && attribute.getPassword().equals(password)){
