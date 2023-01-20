@@ -9,6 +9,8 @@ import com.example.service.OpinionService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
@@ -18,6 +20,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/opinion")
 @CrossOrigin
+//使用kafka减小并发写情况下压力骤增问题
 public class OpinionController {
 
     @Autowired
@@ -29,6 +32,9 @@ public class OpinionController {
     @Autowired
     private RestTemplate restTemplate;
 
+    @Autowired
+    private KafkaTemplate<String,Object> kafkaTemplate;
+
     //增加舆论
     @PostMapping("/add")//这里注意还要进行审核，管理端手动将状态设置才可以查看
     //这里数据库中默认创建state是1，所有当为0时候才可以进行查看
@@ -38,13 +44,19 @@ public class OpinionController {
         String key = "Opinions";
 
         Long userId = BaseContext.getId();
-        opinion.setUserId(userId);
-        opinionService.save(opinion);
+        opinion.setUserId(2L);
+        //这里可以先将消息存入kafka，然后缓慢写入数据库
+        //opinionService.save(opinion);
+        kafkaTemplate.send("addOpinion",opinion);
 
         //舆论数据发生更改需要删除缓存，重新查询数据库
         redisTemplate.delete(key);
 
         return R.success("新增成功");
+    }
+    @KafkaListener(topics = "addOpinion")
+    public void addOpinion(Opinion opinion){
+        opinionService.save(opinion);
     }
 
     //展示功能，展示舆论,当前查询是管理端查询，可以查出来所有state为1的，也就是还没有审核通过的
@@ -99,7 +111,7 @@ public class OpinionController {
         Opinion one = assigned(opinionId);
         return R.success(one);
     }
-    //多次使用，抽取出来避免冗余代码
+    //多次使用，抽取出来避免冗余代码（指定舆论信息查询）
     public Opinion assigned(Long opinionId){
         String key = opinionId+"OneOpinion";//单个舆论,并且不能重复,用id表示
 
@@ -125,6 +137,7 @@ public class OpinionController {
         Opinion opinion = assigned(opinionId);//查询指定舆论
         opinion.setState(0);//表示审核通过
 
+        //这里也可以存入kafka，然后缓慢修改数据库，减小并发压力
         opinionService.updateById(opinion);
 
         //此时应该删除redis中存有的舆论数据
