@@ -44,7 +44,7 @@ public class OpinionController {
         String key = "Opinions";
 
         Long userId = BaseContext.getId();
-        opinion.setUserId(2L);
+        opinion.setUserId(userId);
         //这里可以先将消息存入kafka，然后缓慢写入数据库
         //opinionService.save(opinion);
         kafkaTemplate.send("addOpinion",opinion);
