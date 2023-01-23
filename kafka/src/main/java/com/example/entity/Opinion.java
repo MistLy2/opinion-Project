@@ -38,4 +38,5 @@ public class Opinion implements Serializable {
 
     private int state;//舆论状态
 
+    private int Judge;
 }

@@ -138,13 +138,18 @@ public class OpinionController {
         opinion.setState(0);//表示审核通过
 
         //这里也可以存入kafka，然后缓慢修改数据库，减小并发压力
-        opinionService.updateById(opinion);
+        //opinionService.updateById(opinion);
+        kafkaTemplate.send("updateOpinionState",opinion);
 
         //此时应该删除redis中存有的舆论数据
         String key1 = opinionId+"OneOpinion";
         redisTemplate.delete(key1);
 
         return R.success("审核通过");
+    }
+    @KafkaListener(topics = "updateOpinionState")
+    public void updateOpinionState(Opinion opinion){
+        opinionService.updateById(opinion);
     }
 
 
@@ -168,5 +173,30 @@ public class OpinionController {
         }
 
         return R.success(opinionList);
+    }
+
+    //对于前10 的评判
+    @PutMapping("/judge/{type}")//1表示通过，2表示没有通过，也就为假
+    public R<String> judge(@PathVariable int type,Long opinionId){
+        String key = opinionId+"OneOpinion";
+        System.out.println("舆论id  "+opinionId);
+
+        Opinion opinion = (Opinion)redisTemplate.opsForValue().get(key);
+
+        if(opinion != null){
+            //表示当前redis中有数据
+            opinion.setJudge(type);
+            opinionService.updateById(opinion);
+
+            return R.success("修改成功");
+        }
+        LambdaQueryWrapper<Opinion> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Opinion::getId,opinionId);
+
+        Opinion one = opinionService.getOne(wrapper);
+        one.setJudge(type);
+
+        opinionService.updateById(one);
+        return R.success("修改成功");
     }
 }

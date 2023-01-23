@@ -18,4 +18,6 @@ public class User implements Serializable {
     private Long goodId;//商品id
 
     private int score;//积分
+
+    private int trustValue;//信任值
 }
