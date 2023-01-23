@@ -3,17 +3,22 @@ package com.example.controller;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.example.config.BaseContext;
 import com.example.config.R;
-import com.example.entity.Comment;
+import com.example.config.RedisDao;
 import com.example.entity.Opinion;
 import com.example.service.OpinionService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.kafka.common.protocol.types.Field;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 @Slf4j
@@ -34,6 +39,12 @@ public class OpinionController {
 
     @Autowired
     private KafkaTemplate<String,Object> kafkaTemplate;
+
+    @Autowired
+    private DefaultRedisScript<Boolean> defaultRedisScript;
+
+    @Autowired
+    private RedisDao redisDao;
 
     //增加舆论
     @PostMapping("/add")//这里注意还要进行审核，管理端手动将状态设置才可以查看
@@ -199,4 +210,45 @@ public class OpinionController {
         opinionService.updateById(one);
         return R.success("修改成功");
     }
+
+    //点赞功能实现  使用redis和lua脚本
+   @PutMapping("/like")
+    public R<String> like(Long opinionId){
+       System.out.println(opinionId);
+       //System.out.println("进来了");
+
+       List<String> keys = new ArrayList<>();
+       keys.add(buildUserRedisKey(159L));
+       keys.add(buildOpinionRedisKey(opinionId));
+
+       int value=1;
+
+      Boolean isTrue=(Boolean) redisTemplate.execute(defaultRedisScript,keys,value);
+       //System.out.println("到这里了");
+
+       if(isTrue){
+           return R.success("点赞成功");
+       }else{
+           return R.success("点赞失败");
+       }
+   }
+    private String buildUserRedisKey(Long userId) {
+        return "userId" + userId;
+    }
+
+    private String buildOpinionRedisKey(Long opinionId) {
+        return "opinionId" + opinionId;
+    }
+
+    //展示点赞数量
+    @GetMapping("/showLike/{opinionId}")
+    public R<Object> showLike(@PathVariable Long opinionId){
+        //查询redis，获取当前点赞数量
+        //System.out.println(opinionId);
+         Object o = redisTemplate.opsForValue().get("opinionId"+opinionId);
+
+
+        return R.success(o);
+    }
+
 }
