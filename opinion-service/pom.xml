@@ -19,7 +19,13 @@
     </properties>
 
     <dependencies>
-    <!--jwt token验证-->
+        <!-- Quartz redis定时任务持久化存储到数据库 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-quartz</artifactId>
+        </dependency>
+
+        <!--jwt token验证-->
 
         <dependency>
             <groupId>com.example</groupId>

@@ -3,12 +3,10 @@ package com.example.controller;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.example.config.BaseContext;
 import com.example.config.R;
-import com.example.config.RedisDao;
+import com.example.entity.Liked;
 import com.example.entity.Opinion;
 import com.example.service.OpinionService;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.kafka.common.protocol.types.Field;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
@@ -18,7 +16,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 @Slf4j
@@ -43,8 +40,6 @@ public class OpinionController {
     @Autowired
     private DefaultRedisScript<Boolean> defaultRedisScript;
 
-    @Autowired
-    private RedisDao redisDao;
 
     //增加舆论
     @PostMapping("/add")//这里注意还要进行审核，管理端手动将状态设置才可以查看
@@ -196,7 +191,8 @@ public class OpinionController {
 
         if(opinion != null){
             //表示当前redis中有数据
-            opinion.setJudge(type);
+            opinion.setJudge(type);//设置评判后注意要进行信任值增减
+            //TODO
             opinionService.updateById(opinion);
 
             return R.success("修改成功");
@@ -218,7 +214,7 @@ public class OpinionController {
        //System.out.println("进来了");
 
        List<String> keys = new ArrayList<>();
-       keys.add(buildUserRedisKey(159L));
+       keys.add(buildUserRedisKey(20L));
        keys.add(buildOpinionRedisKey(opinionId));
 
        int value=1;
@@ -227,6 +223,7 @@ public class OpinionController {
        //System.out.println("到这里了");
 
        if(isTrue){
+
            return R.success("点赞成功");
        }else{
            return R.success("点赞失败");
@@ -250,5 +247,4 @@ public class OpinionController {
 
         return R.success(o);
     }
-
 }
