@@ -155,6 +155,8 @@ public class OpinionController {
     @KafkaListener(topics = "updateOpinionState")
     public void updateOpinionState(Opinion opinion){
         opinionService.updateById(opinion);
+        String key1 = opinion.getId()+"OneOpinion";
+        redisTemplate.delete(key1);
     }
 
 
@@ -257,6 +259,21 @@ public class OpinionController {
         List<Opinion> list = new ArrayList<>(set);
 
         //System.out.println(list);
+        return R.success(list);
+    }
+
+    //数据库模糊匹配查找舆论消息
+    @GetMapping("/search/{text}")
+    public R<List<Opinion>> search(@PathVariable String text){
+        //数据库中进行模糊匹配
+        if(text == null){
+            return R.error("查询条件不能为空");
+        }
+        LambdaQueryWrapper<Opinion> wrapper = new LambdaQueryWrapper<>();
+
+        wrapper.like(Opinion::getTitle,text);
+        List<Opinion> list = opinionService.list(wrapper);
+
         return R.success(list);
     }
 }
