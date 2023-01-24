@@ -15,8 +15,7 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 @Slf4j
 @RestController
@@ -214,16 +213,15 @@ public class OpinionController {
        //System.out.println("进来了");
 
        List<String> keys = new ArrayList<>();
-       keys.add(buildUserRedisKey(20L));
+       keys.add(buildUserRedisKey(23L));
        keys.add(buildOpinionRedisKey(opinionId));
 
        int value=1;
 
-      Boolean isTrue=(Boolean) redisTemplate.execute(defaultRedisScript,keys,value);
+      Boolean isTrue=(Boolean) redisTemplate.execute(defaultRedisScript,keys,value+"");
        //System.out.println("到这里了");
 
        if(isTrue){
-
            return R.success("点赞成功");
        }else{
            return R.success("点赞失败");
@@ -241,10 +239,24 @@ public class OpinionController {
     @GetMapping("/showLike/{opinionId}")
     public R<Object> showLike(@PathVariable Long opinionId){
         //查询redis，获取当前点赞数量
-        //System.out.println(opinionId);
-         Object o = redisTemplate.opsForValue().get("opinionId"+opinionId);
-
+        System.out.println(opinionId);
+         Object o = redisTemplate.opsForZSet().score("sortSet", buildOpinionRedisKey(opinionId));
+        System.out.println(o);
+        System.out.println(redisTemplate.opsForHash().get(buildUserRedisKey(20L),buildOpinionRedisKey(opinionId)));
 
         return R.success(o);
+    }
+
+    //展示排行榜前十
+    @GetMapping("/show10")
+    public R<List<Opinion>> showTen(){
+        String listKey = "sortSet";
+        Long count = redisTemplate.opsForZSet().zCard(listKey);//获取最大记录号
+        Set<Opinion> set = redisTemplate.opsForZSet().range(listKey,(count-10>=0)?count-10:0,count);
+
+        List<Opinion> list = new ArrayList<>(set);
+
+        //System.out.println(list);
+        return R.success(list);
     }
 }
