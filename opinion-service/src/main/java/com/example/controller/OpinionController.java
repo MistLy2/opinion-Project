@@ -3,18 +3,28 @@ package com.example.controller;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.example.config.BaseContext;
 import com.example.config.R;
+import com.example.conn.Tess4jClient;
 import com.example.entity.Liked;
 import com.example.entity.Opinion;
 import com.example.service.OpinionService;
 import lombok.extern.slf4j.Slf4j;
+import net.sourceforge.tess4j.TesseractException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.multipart.MultipartFile;
 
+import javax.imageio.ImageIO;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.awt.image.BufferedImage;
+import java.io.*;
 import java.util.*;
 
 @Slf4j
@@ -23,6 +33,9 @@ import java.util.*;
 @CrossOrigin
 //使用kafka减小并发写情况下压力骤增问题
 public class OpinionController {
+
+    @Value("${opinion-service.path}")
+    private String basePath;
 
     @Autowired
     private OpinionService opinionService;
@@ -276,4 +289,49 @@ public class OpinionController {
 
         return R.success(list);
     }
+    //图片文字提取分析并查询数据库返回结果
+    @GetMapping("/analyse/{pictureName}")
+    public R<List<Opinion>> analyse(@PathVariable String pictureName){
+        String result=null;
+
+        byte[] bytes = goFile("111.png");
+        //从byte[]转换为butteredImage
+        ByteArrayInputStream in = new ByteArrayInputStream(bytes);
+        BufferedImage imageFile = null;
+        try {
+            imageFile = ImageIO.read(in);
+
+            //识别图片的文字
+            result= Tess4jClient.doOCR(imageFile);
+            System.out.println(result);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        //查询后返回
+        return search(result);
+    }
+    public byte[] goFile(String name) {
+
+        InputStream inputStream = null;
+        try {
+            inputStream = new FileInputStream(basePath+name);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        byte[] buff = new byte[100];
+        int rc = 0;
+        while (true) {
+            try {
+                if (!((rc = inputStream.read(buff, 0, 100)) > 0)) break;
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            byteArrayOutputStream.write(buff, 0, rc);
+        }
+        return byteArrayOutputStream.toByteArray();
+
+    }
+
 }

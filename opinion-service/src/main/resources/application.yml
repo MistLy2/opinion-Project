@@ -1,3 +1,4 @@
+
 server:
   port: 8082
 #  用postman接口测试时，这里的端口要默认是80，否则会无法连接
@@ -42,6 +43,7 @@ spring:
               packages: '*'
         max.request.size: 5242880 #5M
         linger.ms: 5
+
   redis:
     host: localhost
     port: 6379
@@ -56,7 +58,6 @@ spring:
   cache:
     redis:
       time-to-live: 1800000 #设置缓存数据的缓存时间
-
   view:
     prefix: /
     suffix: .html
@@ -77,3 +78,8 @@ mybatis-plus:
       id-type: ASSIGN_ID
 #      这里要注意一定要设置id为自增，系统默认为雪花算法形成的无规则id
 # 进行一个mp日志的打印,设置为标准输出流打印,开启日志后就能看到mp执行过程和sql执行过程
+tess4j:
+  data-path: D:\tessdata
+  language: chi_sim
+opinion-service:
+  path: D:\tessdata\picture\
