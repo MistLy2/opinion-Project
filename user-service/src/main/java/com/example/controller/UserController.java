@@ -2,6 +2,7 @@ package com.example.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 
+import com.example.Dto.UpdateDto;
 import com.example.Dto.UserDto;
 import com.example.config.R;
 import com.example.entity.User;
@@ -138,6 +139,32 @@ public class UserController {
         String token = request.getHeader("token");
 
         return JwtUtils.checkToken(token);
+    }
+
+    //修改密码  也是忘记密码
+    @PostMapping("/up")
+    public R<String> updatePassword(@RequestBody UpdateDto userDto){
+        LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(User::getAccount,userDto.getAccount());
+
+        User one = userService.getOne(wrapper);
+        if(one == null){
+            return R.error("对不起，没有此账号");
+        }
+        String number = restTemplate
+                .getForObject("http://localhost:8081/person/look/"+one.getId(),String.class);
+
+        if(number == null){
+            return R.error("对不起 您的电话号为空");
+        }
+        if(number.equals(userDto.getNumber())){
+            //如果电话号相同，修改密码即可
+            one.setPassword(userDto.getPassword());
+            userService.updateById(one);
+            return R.success("修改成功");
+        }
+        //电话号不相同返回错误
+        return R.error("您的电话号不正确");
     }
 
     //kafka消费者测试

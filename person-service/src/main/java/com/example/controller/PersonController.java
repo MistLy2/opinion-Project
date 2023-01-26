@@ -9,10 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
 @Slf4j
@@ -50,5 +47,15 @@ public class PersonController {
         //查询到后存入redis缓存
         redisTemplate.opsForValue().set(userId+"person",one);
         return R.success(one);
+    }
+
+    @GetMapping("/look/{userId}")
+    //查找用户电话号
+    public String look(@PathVariable Long userId){
+        LambdaQueryWrapper<Person> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Person::getUserId,userId);
+
+        Person one = personService.getOne(wrapper);
+        return one.getNumber();
     }
 }
