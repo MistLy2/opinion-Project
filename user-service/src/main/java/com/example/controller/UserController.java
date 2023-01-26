@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.util.DigestUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
@@ -45,7 +46,7 @@ public class UserController {
         //System.out.println("进来了");
         String account = map.get("account").toString();
 
-        String password = map.get("password").toString();
+        String password = DigestUtils.md5DigestAsHex(map.get("password").toString().getBytes());
 
         System.out.println(map);
         //Object attribute = session.getAttribute(phone);
@@ -100,7 +101,7 @@ public class UserController {
 
         User user = new User();
         user.setAccount(account);
-        user.setPassword(password);
+        user.setPassword(DigestUtils.md5DigestAsHex(password.getBytes()));
 
         userService.save(user);//mp的根据自动雪花算法会生成用户id
         //注意业务逻辑，这里注册后user表发生变化，需要更新redis
@@ -159,7 +160,7 @@ public class UserController {
         }
         if(number.equals(userDto.getNumber())){
             //如果电话号相同，修改密码即可
-            one.setPassword(userDto.getPassword());
+            one.setPassword(DigestUtils.md5DigestAsHex(userDto.getPassword().getBytes()));
             userService.updateById(one);
             return R.success("修改成功");
         }
