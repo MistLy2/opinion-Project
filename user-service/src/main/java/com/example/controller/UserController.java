@@ -51,7 +51,7 @@ public class UserController {
         System.out.println(map);
         //Object attribute = session.getAttribute(phone);
         //这个account就从redis中进行获取了
-        User attribute = (User)redisTemplate.opsForValue().get(account);
+        User attribute = (User)redisTemplate.opsForValue().get(BaseContext.getId());
 
         if(attribute!=null && attribute.getPassword().equals(password)){
             //说明redis里面存在账号密码，登录即可
@@ -77,7 +77,7 @@ public class UserController {
         if(uu != null){
             //说明用户存在,存入redis并返回即可
             //暂时不设置过期时间
-            redisTemplate.opsForValue().set(uu.getAccount(),uu);
+            redisTemplate.opsForValue().set(uu.getId(),uu);
             session.setAttribute("user",uu.getId());
             BaseContext.setId(uu.getId());
 
@@ -132,6 +132,38 @@ public class UserController {
     public R<String>  update(@RequestBody User user){
         userService.updateById(user);
         return R.success("修改成功");
+    }
+
+    //修改用户信任值
+    @PostMapping("/trust")
+    public String trust(int type){
+        User user= (User)redisTemplate.opsForValue().get(BaseContext.getId());
+        if(user != null){
+            if(type ==1){
+                user.setTrustValue(user.getTrustValue() + 20);
+                userService.updateById(user);
+            }else {
+                user.setTrustValue(user.getTrustValue() - 20);
+                userService.updateById(user);
+            }
+            return "修改成功";
+        }
+
+        LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(User::getId,BaseContext.getId());
+
+        User one = userService.getOne(wrapper);
+
+        if(type ==1){
+            one.setTrustValue(user.getTrustValue() + 20);
+            userService.updateById(user);
+        }else {
+            one.setTrustValue(user.getTrustValue() - 20);
+            userService.updateById(user);
+        }
+        redisTemplate.opsForValue().set(one.getId()+"",one);//存入redis
+
+        return "修改成功";
     }
 
     //token验证,每一次页面跳转的时候进行token验证

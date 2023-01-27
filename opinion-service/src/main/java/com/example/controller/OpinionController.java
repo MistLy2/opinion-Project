@@ -206,10 +206,13 @@ public class OpinionController {
         if(opinion != null){
             //表示当前redis中有数据
             opinion.setJudge(type);//设置评判后注意要进行信任值增减
-            //TODO
+
             opinionService.updateById(opinion);
 
-            return R.success("修改成功");
+            //增减信任值
+            String s = restTemplate.postForObject("http://localhost:8080/trust", type, String.class);
+
+            return R.success(s);
         }
         LambdaQueryWrapper<Opinion> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(Opinion::getId,opinionId);
@@ -218,7 +221,10 @@ public class OpinionController {
         one.setJudge(type);
 
         opinionService.updateById(one);
-        return R.success("修改成功");
+
+        String s = restTemplate.postForObject("http://localhost:8080/trust", type, String.class);
+
+        return R.success(s);
     }
 
     //点赞功能实现  使用redis和lua脚本
