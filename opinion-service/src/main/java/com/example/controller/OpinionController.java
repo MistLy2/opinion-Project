@@ -227,20 +227,28 @@ public class OpinionController {
         return R.success(s);
     }
 
-    //点赞功能实现  使用redis和lua脚本
+    //点赞功能实现  使用redis和lua脚本解决高并发问题
+
    @PutMapping("/like")
     public R<String> like(Long opinionId){
        System.out.println(opinionId);
        //System.out.println("进来了");
 
+       int value=1;
+
        List<String> keys = new ArrayList<>();
-       keys.add(buildUserRedisKey(23L));
+       keys.add(buildUserRedisKey(21L));
        keys.add(buildOpinionRedisKey(opinionId));
 
-       int value=1;
+       List<String> likes = new ArrayList<>();
+       likes.add(21L+"");
+       likes.add(opinionId+"");
+       likes.add(value+"");
 
       Boolean isTrue=(Boolean) redisTemplate.execute(defaultRedisScript,keys,value+"");
        //System.out.println("到这里了");
+       //然后将信息存入kafka，kafka缓慢存入数据库
+       kafkaTemplate.send("likes",likes);
 
        if(isTrue){
            return R.success("点赞成功");

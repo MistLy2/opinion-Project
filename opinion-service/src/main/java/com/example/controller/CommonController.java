@@ -1,7 +1,13 @@
 package com.example.controller;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.example.config.R;
+import com.example.entity.Liked;
+import com.example.entity.Opinion;
+import com.example.service.LikedService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -13,6 +19,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.List;
 import java.util.UUID;
 
 @RequestMapping("/common")
@@ -21,6 +28,9 @@ public class CommonController {
 
     @Value("${opinion-service.path}")
     private String basePath;
+
+    @Autowired
+    private LikedService likedService;
 
     @PostMapping("/upload")
     public R<String>  upload(MultipartFile file) {
@@ -72,4 +82,25 @@ public class CommonController {
         }
     }
 
+    //kafka监听点赞信息，存入数据库
+    @KafkaListener(topics = "likes")
+    public void likes(List<String> list){
+        Long userId = Long.parseLong(list.get(0));
+        Long opinionId = Long.parseLong(list.get(1));
+        int status = Integer.parseInt(list.get(2));
+
+        Liked liked = new Liked();
+        liked.setUserId(userId);
+        liked.setOpinionId(opinionId);
+        liked.setStatus(status);//点赞或者取消点赞
+
+        LambdaQueryWrapper<Liked> wrapper=new LambdaQueryWrapper<>();
+        wrapper.eq(Liked::getUserId,userId)
+                        .eq(Liked::getOpinionId,opinionId);
+        Liked one = likedService.getOne(wrapper);
+        if(one != null){
+            likedService.updateById(one);
+        }
+        likedService.save(liked);
+    }
 }
