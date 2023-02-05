@@ -6,6 +6,7 @@ import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
 
 import java.util.Date;
+import java.util.Objects;
 
 import static io.jsonwebtoken.SignatureAlgorithm.HS512;
 
@@ -58,7 +59,7 @@ public class JwtUtils {
             //如果解析异常，则说明身份验证不成功
             return false;
         }
-        if(uid == BaseContext.getId()){
+        if(Objects.equals(uid, BaseContext.getId())){
             //说明用户正确，鉴权成功
             return true;
         }else{
