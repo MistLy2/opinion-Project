@@ -1,10 +1,12 @@
 package com.example.utils;
 
+import com.example.config.BaseContext;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
 
 import java.util.Date;
+import java.util.Objects;
 
 import static io.jsonwebtoken.SignatureAlgorithm.HS512;
 
@@ -43,16 +45,26 @@ public class JwtUtils {
         if(token == null){
             return false;
         }
-
+        Long uid = null;
         try {
             Jws<Claims> claimsJws =
                     Jwts.parser()
                             .setSigningKey(APP_SECRET)
                             .parseClaimsJws(token);
+            Claims body = claimsJws.getBody();
+             uid= (Long)body.get("uid");
+
+
         }catch (Exception e){
             //如果解析异常，则说明身份验证不成功
             return false;
         }
-        return true;
+        if(Objects.equals(uid, BaseContext.getId())){
+            //说明用户正确，鉴权成功
+            return true;
+        }else{
+            //说明用户不正确
+            return false;
+        }
     }
 }
