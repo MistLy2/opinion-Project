@@ -228,7 +228,6 @@ public class OpinionController {
     }
 
     //点赞功能实现  使用redis和lua脚本解决高并发问题
-
    @PutMapping("/like")
     public R<String> like(Long opinionId){
        System.out.println(opinionId);
@@ -237,13 +236,21 @@ public class OpinionController {
        int value=1;
 
        List<String> keys = new ArrayList<>();
-       keys.add(buildUserRedisKey(21L));
+       keys.add(buildUserRedisKey(BaseContext.getId()));
        keys.add(buildOpinionRedisKey(opinionId));
 
        List<String> likes = new ArrayList<>();
-       likes.add(21L+"");
+       likes.add(BaseContext.getId()+"");
        likes.add(opinionId+"");
        likes.add(value+"");
+
+       //先观察redis里面是否有当前数据，没有的话先载入
+       double o = (double)redisTemplate.opsForZSet().score("sortSet", buildOpinionRedisKey(opinionId));
+       if(o == 0.0){
+           //如果为空，说明已经失效，重新加载
+           double count = (double)opinionService.getById(opinionId).getLikeNumber();
+           redisTemplate.opsForZSet().add("sortSet",buildOpinionRedisKey(opinionId),count);
+       }
 
       Boolean isTrue=(Boolean) redisTemplate.execute(defaultRedisScript,keys,value+"");
        //System.out.println("到这里了");
@@ -269,10 +276,15 @@ public class OpinionController {
     public R<Object> showLike(@PathVariable Long opinionId){
         //查询redis，获取当前点赞数量
         System.out.println(opinionId);
-         Object o = redisTemplate.opsForZSet().score("sortSet", buildOpinionRedisKey(opinionId));
-        System.out.println(o);
-        System.out.println(redisTemplate.opsForHash().get(buildUserRedisKey(20L),buildOpinionRedisKey(opinionId)));
-
+        Object o = null;
+          o = redisTemplate.opsForZSet().score("sortSet", buildOpinionRedisKey(opinionId));
+//        System.out.println(o);
+//        System.out.println(redisTemplate.opsForHash().get(buildUserRedisKey(20L),buildOpinionRedisKey(opinionId)));
+        if(o==null){
+            //如果redis中没有点赞信息,去数据库中查找
+            Opinion byId = opinionService.getById(opinionId);
+            o=byId.getLikeNumber();
+        }
         return R.success(o);
     }
 
